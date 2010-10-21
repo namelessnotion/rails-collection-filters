@@ -1,0 +1,14 @@
+Autotest.add_hook :initialize do |autotest|
+  %w{.git .DS_Store ._* spec/debug.log spec/db}.each do |exception|
+    autotest.add_exception(exception)
+  end
+
+  #auto_test.add_mapping(%r%^spec/.*rb$%) { |filename, _|
+  #  filename
+  #}
+
+  #auto_test.add_mapping(%r%^lib/collection_filters/(.*)\.rb$%) { |_, m|
+	#	["spec/#{m[1]}_spec.rb"]
+	#}
+end
+

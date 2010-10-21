@@ -1,0 +1,13 @@
+.bundle
+.idea
+*.swap
+*.swp
+*.swo
+*~
+.bundle
+db/*.sqlite3
+log/*
+*.log
+*.sqllite3
+tmp/**/*
+.rvmrc
