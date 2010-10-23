@@ -46,6 +46,9 @@ describe CollectionFilters::Controllers::Helpers do
 
       
       describe AnimalsController do
+        before(:each) do
+          
+        end
         it "should apply CollectionFilter filter to collections" do
           @mock_filters.should_receive(:apply).with({"by_gender" => "male"}, Animal).and_return(mock_animals_male_collection)
           @mock_filters.stub!(:add)
@@ -68,6 +71,14 @@ describe CollectionFilters::Controllers::Helpers do
           @mock_filters.stub!(:add)
           AnimalsController.collection_filter= @mock_filters
           get :index, :filter => { "by_created_at" => "asc"}
+        end
+        
+        it "should return original target when filters are absent" do
+          mock_animals = mock("Animals Newest First")
+          @mock_filters.should_receive(:apply).with(nil, Animal).and_return(mock_animals)
+          @mock_filters.stub!(:add)
+          AnimalsController.collection_filter= @mock_filters
+          get :index
         end
       end
       

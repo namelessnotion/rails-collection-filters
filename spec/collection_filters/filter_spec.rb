@@ -81,6 +81,20 @@ describe CollectionFilters::Filter do
       @filter.apply(params, target).should == mock_male_animals_for_sale
     end
     
+    it "should return the original target when params are nil" do
+      mock_animals = mock("Mock Animals")
+      target = Animal
+      params = nil
+      @filter.apply(params, target).should == Animal
+    end
+    
+    it "should return the original target when params are empty" do
+      mock_animals = mock("Mock Animals")
+      target = Animal
+      params = {}
+      @filter.apply(params, target).should == Animal
+    end
+    
     describe "sort filters" do
       it "should apply the sort filter for desc" do
         mock_animals_newest_first = mock("Newest Animals First")

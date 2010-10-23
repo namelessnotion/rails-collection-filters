@@ -39,9 +39,11 @@ module CollectionFilters
     end
     
     def apply(params, target, options = {})
-      target = target.scoped
-      params.symbolize_keys.each do |filter_name, value|
-        target = @filters[filter_name][:proc].call(target, value)
+      if !(params.nil? || params.empty?)
+        target = target.scoped
+        params.symbolize_keys.each do |filter_name, value|
+          target = @filters[filter_name][:proc].call(target, value)
+        end
       end
       target
     end
