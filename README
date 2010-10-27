@@ -1,13 +1,3 @@
-CollectionFilters
-=================
-
-Introduction goes here.
+$ git submodule add git://github.com/namelessnotion/rails-collection-filters.git vendor/plugins/rails-collection-filters
 
 
-Example
-=======
-
-Example goes here.
-
-
-Copyright (c) 2010 Anthony Byram, released under the MIT license
