@@ -7,6 +7,8 @@ class Animal < ActiveRecord::Base
   scope :newest_first, order("created_at DESC")
   scope :oldest_first, order("created_at ASC")
   scope :active, where(:active => true)
+  scope :publish, where(:publish => true)
+  
 end
 
 describe CollectionFilters::Filter do
@@ -129,5 +131,48 @@ describe CollectionFilters::Filter do
         @filter.apply(params, target).should == @scoped_animal
       end
     end
+    
+    describe "default filters" do
+      
+      describe "boolean type" do
+        before(:each) do
+          @filter.add(:publish, :boolean => true, :default => true)
+        end
+      
+        it "should apply default filters when no other filters are present" do
+          mock_published_animals = mock("Published Animals")
+          @scoped_animal.should_receive(:publish).and_return(mock_published_animals)
+          @filter.apply({}, Animal).should == mock_published_animals
+        end
+        it "should not apply default filters when other filters are present" do
+          mock_active_animals = mock("Active Animals")
+          @scoped_animal.should_not_receive(:publish)
+          @scoped_animal.should_receive(:active).and_return(mock_active_animals)
+          @filter.apply({"active" => true}, Animal).should == mock_active_animals
+        end
+      end
+      
+      describe "sort type" do
+        before(:each) do
+          @filter.add(:post_age, :sort => { :desc => :newest_first, :asc => :oldest_first}, :default => :desc)
+        end
+      
+        it "should apply default filters when no other filters are present" do
+          mock_newest_animals = mock("Newest Animals First")
+          @scoped_animal.should_receive(:newest_first).and_return(mock_newest_animals)
+          @filter.apply({}, Animal).should == mock_newest_animals
+        end
+      end
+      
+      describe "that sort" do
+        
+      end
+    end
+    
+    describe "strict filters" do
+      it "should apply strict filters when no other filters are present"
+      it "should apply strict fitler when other filters are present"
+    end
+    
   end
 end

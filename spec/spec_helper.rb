@@ -17,8 +17,8 @@ end
 
 class AnimalsController < ActionController::Base
   has_filter :by_gender
-  has_filter :by_created_at, :sort => {:asc => :newest_first, :desc => :oldest_first}
-  has_filter :active, :boolean => true
+  has_filter :by_created_at, :sort => {:desc => :newest_first, :asc => :oldest_first}, :default => :desc
+  has_filter :active, :boolean => true, :strict => true
   def index
     @animals = filtered_collection(Animal)
     render :nothing => true
@@ -27,7 +27,7 @@ end
 
 class DogsController < ActionController::Base
   has_filter :by_gender
-  has_filter :by_created_at, :sort => {:asc => :newest_first, :desc => :oldest_first}
+  has_filter :by_created_at, :sort => {:desc => :newest_first, :asc => :oldest_first}
   has_filter :active, :boolean => true
   def index
     puts params.inspect
