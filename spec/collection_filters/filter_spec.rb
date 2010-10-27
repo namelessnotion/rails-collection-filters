@@ -163,15 +163,27 @@ describe CollectionFilters::Filter do
           @filter.apply({}, Animal).should == mock_newest_animals
         end
       end
-      
-      describe "that sort" do
-        
-      end
     end
     
     describe "strict filters" do
-      it "should apply strict filters when no other filters are present"
-      it "should apply strict fitler when other filters are present"
+      before(:each) do
+        @filter.add(:publish, :boolean => true, :strict => true)
+      end
+      
+      it "should apply strict filters when no other filters are present" do
+        mock_published_animals = mock("Published Animals")
+        @scoped_animal.should_receive(:publish).and_return(mock_published_animals)
+        @filter.apply({}, Animal).should == mock_published_animals
+      end
+      
+      it "should apply strict fitler when other filters are present" do
+        mock_active_animals = mock("Active Animals")
+        @scoped_animal.should_receive(:active).and_return(mock_active_animals)
+        mock_active_animals.should_receive(:is_a?).with(ActiveRecord::Relation).and_return(true)
+        mock_active_published_animals = mock("Active Published Animals")
+        mock_active_animals.should_receive(:publish).and_return(mock_active_published_animals)
+        @filter.apply({"active" => true}, Animal).should == mock_active_published_animals
+      end
     end
     
   end

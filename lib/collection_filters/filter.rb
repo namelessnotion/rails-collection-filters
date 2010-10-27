@@ -3,7 +3,7 @@ module CollectionFilters
     def initialize(collection_name)
       @filters = {}
       @default_filters = {}
-      @strict_filter = {}
+      @strict_filters = {}
     end
     
     def add(filter, options = {})
@@ -57,6 +57,16 @@ module CollectionFilters
           target = filter[:proc].call(target, filter[:args])
         end
       end
+      
+      if !@strict_filters.empty?
+        if !target.is_a?(ActiveRecord::Relation )
+          target = target.scoped
+        end
+        @strict_filters.each do |filter_name, filter|
+          target = filter[:proc].call(target, filter[:args])
+        end
+      end
+      
       target
     end
     
@@ -74,7 +84,7 @@ module CollectionFilters
       end
       
       if options[:strict]
-        @default_filters[name] = { :type => type, :proc => proc, :args => options[:strict]}
+        @strict_filters[name] = { :type => type, :proc => proc, :args => options[:strict]}
       end
     end
   end
