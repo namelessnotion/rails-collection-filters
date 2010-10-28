@@ -7,7 +7,7 @@ module CollectionFilters
     end
     
     def add(filter, options = {})
-      add_filter_options = {}
+      add_filter_options = { :children => [] }
       add_filter_options[:default] = options[:default] if !options[:default].nil?
       add_filter_options[:strict] = options[:strict] if !options[:strict].nil?
       if options[:sort]
@@ -16,6 +16,8 @@ module CollectionFilters
         #add the sort aliases as well
         add(sort_options[:asc], :boolean => true)
         add(sort_options[:desc], :boolean => true)
+        add_filter_options[:children] << sort_options[:asc]
+        add_filter_options[:children] << sort_options[:desc]
         
         proc_filter = Proc.new { |target, direction|
           direction = direction.to_sym unless direction.is_a?(Symbol)
@@ -44,22 +46,30 @@ module CollectionFilters
     end
     
     def apply(params, target, options = {})
+      applied_filters = []
       if !(params.nil? || params.empty?)
         target = target.scoped
         params.symbolize_keys.each do |filter_name, value|
-          target = @filters[filter_name][:proc].call(target, value)
+          if(@strict_filters[filter_name].nil?) #strict filters can not be applied via params
+            target = @filters[filter_name][:proc].call(target, value)
+            applied_filters << filter_name
+          end
         end
+      end
         
-        
-      elsif !@default_filters.empty?
-        target = target.scoped
+      if !@default_filters.empty?
+        if target.respond_to?(:scoped)
+          target = target.scoped
+        end
         @default_filters.each do |filter_name, filter|
-          target = filter[:proc].call(target, filter[:args])
+          #only apply a default filter if the filter has not been applied
+          #and the filter's children have not been applied
+          target = filter[:proc].call(target, filter[:args]) if ((filter[:children] << filter_name) & applied_filters).empty?
         end
       end
       
       if !@strict_filters.empty?
-        if !target.is_a?(ActiveRecord::Relation )
+        if target.respond_to?(:scoped)
           target = target.scoped
         end
         @strict_filters.each do |filter_name, filter|
@@ -80,7 +90,7 @@ module CollectionFilters
       @filters[name] = {:type => type, :proc => proc}
       
       if options[:default]
-        @default_filters[name] = { :type => type, :proc => proc, :args => options[:default]}
+        @default_filters[name] = { :type => type, :proc => proc, :args => options[:default], :children => options[:children] }
       end
       
       if options[:strict]

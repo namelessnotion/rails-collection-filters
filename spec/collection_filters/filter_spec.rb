@@ -144,11 +144,12 @@ describe CollectionFilters::Filter do
           @scoped_animal.should_receive(:publish).and_return(mock_published_animals)
           @filter.apply({}, Animal).should == mock_published_animals
         end
-        it "should not apply default filters when other filters are present" do
+        
+        it "should not apply default filters when filter is present in params" do
           mock_active_animals = mock("Active Animals")
           @scoped_animal.should_not_receive(:publish)
           @scoped_animal.should_receive(:active).and_return(mock_active_animals)
-          @filter.apply({"active" => true}, Animal).should == mock_active_animals
+          @filter.apply({"publish" => false, "active" => true}, Animal).should == mock_active_animals
         end
       end
       
@@ -162,7 +163,16 @@ describe CollectionFilters::Filter do
           @scoped_animal.should_receive(:newest_first).and_return(mock_newest_animals)
           @filter.apply({}, Animal).should == mock_newest_animals
         end
+        
+        it "should not apply default filters when fitler is present in params" do
+          mock_oldest_animals = mock("Oldest Animals First")
+          @scoped_animal.should_not_receive(:newest_first)
+          @scoped_animal.should_receive(:oldest_first).twice.and_return(mock_oldest_animals)
+          @filter.apply({:oldest_first => true}, Animal).should == mock_oldest_animals
+          @filter.apply({:post_age => "asc"}, Animal).should == mock_oldest_animals
+        end
       end
+      
     end
     
     describe "strict filters" do
@@ -179,10 +189,16 @@ describe CollectionFilters::Filter do
       it "should apply strict fitler when other filters are present" do
         mock_active_animals = mock("Active Animals")
         @scoped_animal.should_receive(:active).and_return(mock_active_animals)
-        mock_active_animals.should_receive(:is_a?).with(ActiveRecord::Relation).and_return(true)
+        mock_active_animals.should_receive(:respond_to?).with(:scoped).and_return(false)
         mock_active_published_animals = mock("Active Published Animals")
         mock_active_animals.should_receive(:publish).and_return(mock_active_published_animals)
         @filter.apply({"active" => true}, Animal).should == mock_active_published_animals
+      end
+      
+      it "should not be alterable" do
+        mock_published_animals = mock("Published Animals")
+        @scoped_animal.should_receive(:publish).and_return(mock_published_animals)
+        @filter.apply({"publish" => false}, Animal).should == mock_published_animals
       end
     end
     
