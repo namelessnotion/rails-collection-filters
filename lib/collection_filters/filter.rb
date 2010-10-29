@@ -48,9 +48,10 @@ module CollectionFilters
     def apply(params, target, options = {})
       applied_filters = []
       if !(params.nil? || params.empty?)
-        target = target.scoped
         params.symbolize_keys.each do |filter_name, value|
-          if(@strict_filters[filter_name].nil?) #strict filters can not be applied via params
+          if(@strict_filters[filter_name].nil? && !@filters[filter_name].nil?) #strict filters can not be applied via params
+            target = scoped_target(target)
+
             target = @filters[filter_name][:proc].call(target, value)
             applied_filters << filter_name
           end
@@ -58,9 +59,8 @@ module CollectionFilters
       end
         
       if !@default_filters.empty?
-        if target.respond_to?(:scoped)
-          target = target.scoped
-        end
+        target = scoped_target(target)
+
         @default_filters.each do |filter_name, filter|
           #only apply a default filter if the filter has not been applied
           #and the filter's children have not been applied
@@ -69,9 +69,7 @@ module CollectionFilters
       end
       
       if !@strict_filters.empty?
-        if target.respond_to?(:scoped)
-          target = target.scoped
-        end
+        target = scoped_target(target)
         @strict_filters.each do |filter_name, filter|
           target = filter[:proc].call(target, filter[:args])
         end
@@ -86,6 +84,14 @@ module CollectionFilters
     
     
     private
+    
+    def scoped_target(target)
+      if target.respond_to?(:scoped)
+        target = target.scoped
+      end
+      target
+    end
+    
     def add_filter(name, type, proc, options = {})
       @filters[name] = {:type => type, :proc => proc}
       

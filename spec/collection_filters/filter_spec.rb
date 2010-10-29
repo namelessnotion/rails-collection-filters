@@ -97,6 +97,13 @@ describe CollectionFilters::Filter do
       @filter.apply(params, target).should == Animal
     end
     
+    it "should handle unknown filters gracefully (ignore them)" do
+      mock_animals = mock("Mock Animals")
+      target = Animal
+      params = {:by_category => true}
+      @filter.apply(params, target).should == Animal
+    end
+    
     describe "sort filters" do
       it "should apply the sort filter for desc" do
         mock_animals_newest_first = mock("Newest Animals First")
